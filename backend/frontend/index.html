@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Financeiro Simplificado</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0d0f;
+      --surface: #13161a;
+      --surface2: #1c2026;
+      --border: #252b33;
+      --accent: #00e5a0;
+      --accent2: #ff6b35;
+      --accent3: #7b6fff;
+      --text: #e8edf2;
+      --muted: #5a6470;
+      --danger: #ff4d6a;
+      --success: #00e5a0;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+      background: rgba(11,13,15,0.95);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--accent); }
+    .api-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      background: rgba(0,229,160,0.1);
+      border: 1px solid rgba(0,229,160,0.25);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .nav-tab {
+      padding: 7px 18px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      font-family: 'Syne', sans-serif;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { background: var(--surface2); color: var(--accent); border: 1px solid var(--border); }
+
+    /* ── MAIN GRID ── */
+    main { padding: 32px 0 60px; }
+
+    /* ── STAT CARDS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(0,229,160,0.3); }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 80px; height: 80px;
+      border-radius: 0 0 0 80px;
+      opacity: 0.06;
+    }
+    .stat-card.green::after { background: var(--accent); }
+    .stat-card.orange::after { background: var(--accent2); }
+    .stat-card.purple::after { background: var(--accent3); }
+    .stat-card.red::after { background: var(--danger); }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+    .stat-value.green { color: var(--accent); }
+    .stat-value.orange { color: var(--accent2); }
+    .stat-value.purple { color: var(--accent3); }
+    .stat-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── CONTENT GRID ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .panel-body { padding: 20px 22px; }
+
+    /* ── FORM ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+    }
+    input, select, textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      width: 100%;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,229,160,0.08);
+    }
+    select option { background: var(--surface2); }
+
+    .tipo-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .tipo-btn {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tipo-btn:hover { border-color: var(--accent); color: var(--text); }
+    .tipo-btn.active-entrada { border-color: var(--success); background: rgba(0,229,160,0.08); color: var(--success); }
+    .tipo-btn.active-saida { border-color: var(--danger); background: rgba(255,77,106,0.08); color: var(--danger); }
+
+    .btn {
+      padding: 12px 22px;
+      border-radius: 9px;
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      width: 100%;
+      justify-content: center;
+      margin-top: 6px;
+    }
+    .btn-primary:hover { background: #00ffb0; transform: translateY(-1px); }
+    .btn-danger { background: rgba(255,77,106,0.12); color: var(--danger); border: 1px solid rgba(255,77,106,0.2); }
+    .btn-danger:hover { background: rgba(255,77,106,0.2); }
+    .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    td {
+      padding: 13px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(37,43,51,0.5);
+      font-family: 'DM Mono', monospace;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.015); }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'Syne', sans-serif;
+    }
+    .badge-entrada { background: rgba(0,229,160,0.1); color: var(--accent); border: 1px solid rgba(0,229,160,0.2); }
+    .badge-saida { background: rgba(255,77,106,0.1); color: var(--danger); border: 1px solid rgba(255,77,106,0.2); }
+    .valor-entrada { color: var(--accent); }
+    .valor-saida { color: var(--danger); }
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; }
+
+    /* ── RESUMO PANEL ── */
+    .resumo-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .resumo-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(37,43,51,0.6);
+      font-size: 13px;
+    }
+    .resumo-row:last-child { border-bottom: none; }
+    .resumo-row span:first-child { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; }
+    .saldo-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .saldo-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #00c888);
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+
+    /* ── API ENDPOINT PILLS ── */
+    .endpoint-list { display: flex; flex-direction: column; gap: 8px; }
+    .endpoint-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      transition: border-color 0.2s;
+    }
+    .endpoint-item:hover { border-color: rgba(0,229,160,0.2); }
+    .method {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 4px;
+      min-width: 44px;
+      text-align: center;
+    }
+    .GET { background: rgba(123,111,255,0.15); color: var(--accent3); }
+    .POST { background: rgba(0,229,160,0.12); color: var(--accent); }
+    .PUT { background: rgba(255,107,53,0.12); color: var(--accent2); }
+    .DELETE { background: rgba(255,77,106,0.12); color: var(--danger); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 13px;
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-color: rgba(0,229,160,0.4); }
+    #toast.error { border-color: rgba(255,77,106,0.4); }
+
+    /* ── TABS CONTENT ── */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* usuarios tab grid */
+    .usuarios-grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+    .categorias-grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">💰</div>
+        <div class="logo-text">Sistema <span>Financeiro</span></div>
+      </div>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="nav-tab" onclick="switchTab('lancamentos')">Lançamentos</button>
+        <button class="nav-tab" onclick="switchTab('usuarios')">Usuários</button>
+        <button class="nav-tab" onclick="switchTab('categorias')">Categorias</button>
+        <button class="nav-tab" onclick="switchTab('api')">API Docs</button>
+      </nav>
+      <div class="api-badge">REST API · Flask · SQLite</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- ══ DASHBOARD TAB ══ -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="section-title">Dashboard</div>
+      <div class="section-sub">// visão geral do sistema financeiro</div>
+
+      <div class="stats-row">
+        <div class="stat-card green">
+          <div class="stat-label">Total Entradas</div>
+          <div class="stat-value green" id="dash-entradas">R$ 0,00</div>
+          <div class="stat-sub">tipo: "entrada"</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Total Saídas</div>
+          <div class="stat-value" style="color:var(--danger)" id="dash-saidas">R$ 0,00</div>
+          <div class="stat-sub">tipo: "saida"</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Saldo Atual</div>
+          <div class="stat-value purple" id="dash-saldo">R$ 0,00</div>
+          <div class="stat-sub">entradas - saídas</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-label">Lançamentos</div>
+          <div class="stat-value orange" id="dash-count">0</div>
+          <div class="stat-sub">registros no banco</div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <!-- Últimos lançamentos -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Últimos Lançamentos</div>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-table">
+                  <tr><td colspan="5"><div class="empty-state"><div class="icon">📊</div><p>Nenhum lançamento ainda.<br>Crie um na aba <strong>Lançamentos</strong>.</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumo por usuario -->
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-header">
+              <div class="panel-title"><span class="dot" style="background:var(--accent3)"></span> Resumo por Usuário</div>
+            </div>
+            <div class="panel-body">
+              <div class="form-group" style="margin-bottom:12px">
+                <label>ID do Usuário</label>
+                <input type="number" id="resumo-uid" placeholder="Ex: 1" min="1" />
+              </div>
+              <button class="btn btn-primary" onclick="carregarResumo()">Ver Resumo</button>
+              <div id="resumo-result" style="margin-top:14px"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> Filtros Rápidos</div>
+            </div>
+            <div class="panel-body">
+              <div class="form-group" style="margin-bottom:12px">
+                <label>Filtrar por Tipo</label>
+                <select id="filtro-tipo" onchange="filtrarLancamentos()">
+                  <option value="">Todos</option>
+                  <option value="entrada">Apenas Entradas</option>
+                  <option value="saida">Apenas Saídas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Filtrar por Usuário ID</label>
+                <input type="number" id="filtro-uid" placeholder="Ex: 1" onchange="filtrarLancamentos()" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LANÇAMENTOS TAB ══ -->
+    <div id="tab-lancamentos" class="tab-content">
+      <div class="section-title">Lançamentos</div>
+      <div class="section-sub">// POST /lancamentos · GET /lancamentos · DELETE /lancamentos/:id</div>
+
+      <div class="content-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Lista de Lançamentos</div>
+          </div>
+          <div style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Usuário</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="lance-table">
+                  <tr><td colspan="6"><div class="empty-state"><div class="icon">💸</div><p>Nenhum lançamento cadastrado.</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Novo Lançamento</div>
+          </div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Tipo</label>
+                <div class="tipo-toggle">
+                  <button class="tipo-btn active-entrada" id="btn-entrada" onclick="setTipo('entrada')">↑ Entrada</button>
+                  <button class="tipo-btn" id="btn-saida" onclick="setTipo('saida')">↓ Saída</button>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label>Descrição</label>
+                <input type="text" id="l-desc" placeholder="Ex: Salário mensal" />
+              </div>
+              <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="l-valor" placeholder="0.00" min="0.01" step="0.01" />
+              </div>
+              <div class="form-group">
+                <label>Usuário ID</label>
+                <input type="number" id="l-uid" placeholder="1" min="1" />
+              </div>
+              <div class="form-group full">
+                <label>Categoria ID</label>
+                <input type="number" id="l-catid" placeholder="1" min="1" />
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="criarLancamento()">＋ Criar Lançamento</button>
+
+            <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--border)">
+              <div class="panel-title" style="margin-bottom:10px; font-size:12px;"><span class="dot" style="background:var(--danger)"></span> Testar Validações</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-danger btn-sm" onclick="testarErroValor()">🧪 Testar valor negativo (-50)</button>
+                <button class="btn btn-danger btn-sm" onclick="testarErroTipo()">🧪 Testar tipo inválido ("credito")</button>
+              </div>
+              <div id="erro-result" style="margin-top:12px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ USUÁRIOS TAB ══ -->
+    <div id="tab-usuarios" class="tab-content">
+      <div class="section-title">Usuários</div>
+      <div class="section-sub">// POST /usuarios · GET /usuarios · DELETE /usuarios/:id</div>
+      <div class="usuarios-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Novo Usuário</div>
+          </div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Nome</label>
+                <input type="text" id="u-nome" placeholder="João Silva" />
+              </div>
+              <div class="form-group full">
+                <label>E-mail</label>
+                <input type="email" id="u-email" placeholder="joao@email.com" />
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="criarUsuario()">＋ Cadastrar Usuário</button>
+            <div id="u-result" style="margin-top:12px"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Usuários Cadastrados</div>
+          </div>
+          <div style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ação</th></tr>
+                </thead>
+                <tbody id="user-table">
+                  <tr><td colspan="5"><div class="empty-state"><div class="icon">👤</div><p>Nenhum usuário cadastrado.</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CATEGORIAS TAB ══ -->
+    <div id="tab-categorias" class="tab-content">
+      <div class="section-title">Categorias</div>
+      <div class="section-sub">// POST /categorias · GET /categorias · DELETE /categorias/:id</div>
+      <div class="categorias-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Nova Categoria</div>
+          </div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Nome</label>
+                <input type="text" id="c-nome" placeholder="Alimentação" />
+              </div>
+              <div class="form-group full">
+                <label>Descrição</label>
+                <input type="text" id="c-desc" placeholder="Gastos com alimentação..." />
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="criarCategoria()">＋ Criar Categoria</button>
+            <div id="c-result" style="margin-top:12px"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> Categorias Cadastradas</div>
+          </div>
+          <div style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>ID</th><th>Nome</th><th>Descrição</th><th>Ação</th></tr>
+                </thead>
+                <tbody id="cat-table">
+                  <tr><td colspan="4"><div class="empty-state"><div class="icon">🏷️</div><p>Nenhuma categoria cadastrada.</p></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ API DOCS TAB ══ -->
+    <div id="tab-api" class="tab-content">
+      <div class="section-title">API Reference</div>
+      <div class="section-sub">// base URL: http://localhost:5000</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot"></span> /usuarios</div>
+          </div>
+          <div class="panel-body">
+            <div class="endpoint-list">
+              <div class="endpoint-item"><span class="method GET">GET</span>/usuarios/</div>
+              <div class="endpoint-item"><span class="method POST">POST</span>/usuarios/</div>
+              <div class="endpoint-item"><span class="method GET">GET</span>/usuarios/:id</div>
+              <div class="endpoint-item"><span class="method PUT">PUT</span>/usuarios/:id</div>
+              <div class="endpoint-item"><span class="method DELETE">DELETE</span>/usuarios/:id</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> /lancamentos</div>
+          </div>
+          <div class="panel-body">
+            <div class="endpoint-list">
+              <div class="endpoint-item"><span class="method GET">GET</span>/lancamentos/</div>
+              <div class="endpoint-item"><span class="method POST">POST</span>/lancamentos/</div>
+              <div class="endpoint-item"><span class="method GET">GET</span>/lancamentos/:id</div>
+              <div class="endpoint-item"><span class="method PUT">PUT</span>/lancamentos/:id</div>
+              <div class="endpoint-item"><span class="method DELETE">DELETE</span>/lancamentos/:id</div>
+              <div class="endpoint-item"><span class="method GET">GET</span>/lancamentos/resumo/:uid</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:var(--accent3)"></span> /categorias</div>
+          </div>
+          <div class="panel-body">
+            <div class="endpoint-list">
+              <div class="endpoint-item"><span class="method GET">GET</span>/categorias/</div>
+              <div class="endpoint-item"><span class="method POST">POST</span>/categorias/</div>
+              <div class="endpoint-item"><span class="method GET">GET</span>/categorias/:id</div>
+              <div class="endpoint-item"><span class="method PUT">PUT</span>/categorias/:id</div>
+              <div class="endpoint-item"><span class="method DELETE">DELETE</span>/categorias/:id</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> Regras de Negócio</div>
+          </div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+              <div class="resumo-block">
+                <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--accent)">✔ Regra 1 — Valor Positivo</div>
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">valor &gt; 0 obrigatório<br>retorna 422 se negativo ou zero</div>
+              </div>
+              <div class="resumo-block">
+                <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--accent3)">✔ Regra 2 — Tipo Válido</div>
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">tipo ∈ {"entrada","saida"}<br>retorna 422 se outro valor</div>
+              </div>
+              <div class="resumo-block">
+                <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--accent2)">✔ Regra 3 — FK Existente</div>
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">usuário e categoria devem existir<br>retorna 404 se não encontrado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  const API = 'http://localhost:5000';
+
+  // ── STATE (local mock when API offline) ──
+  let state = {
+    usuarios: [],
+    categorias: [],
+    lancamentos: [],
+    nextUid: 1,
+    nextCid: 1,
+    nextLid: 1,
+  };
+
+  // ── TABS ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'dashboard') atualizarDashboard();
+  }
+
+  // ── TOAST ──
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.className = 'show ' + type;
+    t.innerHTML = (type === 'success' ? '✅' : '❌') + ' ' + msg;
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ── TIPO TOGGLE ──
+  let tipoSelecionado = 'entrada';
+  function setTipo(t) {
+    tipoSelecionado = t;
+    document.getElementById('btn-entrada').className = 'tipo-btn' + (t==='entrada'?' active-entrada':'');
+    document.getElementById('btn-saida').className = 'tipo-btn' + (t==='saida'?' active-saida':'');
+  }
+
+  // ── FORMAT ──
+  function fmt(v) { return 'R$ ' + Number(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+  function fmtDate(s) { return new Date(s).toLocaleDateString('pt-BR'); }
+
+  // ── USUÁRIOS ──
+  function criarUsuario() {
+    const nome = document.getElementById('u-nome').value.trim();
+    const email = document.getElementById('u-email').value.trim();
+    if (!nome || !email) { showToast('Nome e e-mail são obrigatórios', 'error'); return; }
+    if (state.usuarios.find(u => u.email === email)) { showToast('E-mail já cadastrado (409)', 'error'); return; }
+    const u = { id: state.nextUid++, nome, email, criado_em: new Date().toISOString() };
+    state.usuarios.push(u);
+    document.getElementById('u-nome').value = '';
+    document.getElementById('u-email').value = '';
+    renderUsuarios();
+    showToast('Usuário criado — ID: ' + u.id);
+    document.getElementById('u-result').innerHTML = `<div class="resumo-block"><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)">201 Created</div><pre style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px;white-space:pre-wrap">${JSON.stringify(u, null, 2)}</pre></div>`;
+  }
+
+  function deletarUsuario(id) {
+    state.usuarios = state.usuarios.filter(u => u.id !== id);
+    state.lancamentos = state.lancamentos.filter(l => l.usuario_id !== id);
+    renderUsuarios(); atualizarDashboard();
+    showToast('Usuário removido');
+  }
+
+  function renderUsuarios() {
+    const tb = document.getElementById('user-table');
+    if (!state.usuarios.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">👤</div><p>Nenhum usuário cadastrado.</p></div></td></tr>'; return; }
+    tb.innerHTML = state.usuarios.map(u => `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>${fmtDate(u.criado_em)}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deletarUsuario(${u.id})">Remover</button></td>
+      </tr>`).join('');
+  }
+
+  // ── CATEGORIAS ──
+  function criarCategoria() {
+    const nome = document.getElementById('c-nome').value.trim();
+    const desc = document.getElementById('c-desc').value.trim();
+    if (!nome) { showToast('Nome é obrigatório', 'error'); return; }
+    const c = { id: state.nextCid++, nome, descricao: desc };
+    state.categorias.push(c);
+    document.getElementById('c-nome').value = '';
+    document.getElementById('c-desc').value = '';
+    renderCategorias();
+    showToast('Categoria criada — ID: ' + c.id);
+    document.getElementById('c-result').innerHTML = `<div class="resumo-block"><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)">201 Created</div><pre style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px;white-space:pre-wrap">${JSON.stringify(c, null, 2)}</pre></div>`;
+  }
+
+  function deletarCategoria(id) {
+    state.categorias = state.categorias.filter(c => c.id !== id);
+    renderCategorias();
+    showToast('Categoria removida');
+  }
+
+  function renderCategorias() {
+    const tb = document.getElementById('cat-table');
+    if (!state.categorias.length) { tb.innerHTML = '<tr><td colspan="4"><div class="empty-state"><div class="icon">🏷️</div><p>Nenhuma categoria cadastrada.</p></div></td></tr>'; return; }
+    tb.innerHTML = state.categorias.map(c => `
+      <tr>
+        <td>${c.id}</td>
+        <td>${c.nome}</td>
+        <td>${c.descricao || '—'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deletarCategoria(${c.id})">Remover</button></td>
+      </tr>`).join('');
+  }
+
+  // ── LANÇAMENTOS ──
+  function criarLancamento() {
+    const desc = document.getElementById('l-desc').value.trim();
+    const valor = parseFloat(document.getElementById('l-valor').value);
+    const uid = parseInt(document.getElementById('l-uid').value);
+    const catid = parseInt(document.getElementById('l-catid').value);
+
+    // Validações (espelham o backend)
+    if (!desc || isNaN(valor) || isNaN(uid) || isNaN(catid)) { showToast('Preencha todos os campos', 'error'); return; }
+    if (valor <= 0) { showToast('Erro 422: valor deve ser positivo', 'error'); return; }
+    if (!state.usuarios.find(u => u.id === uid)) { showToast('Erro 404: usuário não encontrado', 'error'); return; }
+    if (!state.categorias.find(c => c.id === catid)) { showToast('Erro 404: categoria não encontrada', 'error'); return; }
+
+    const l = { id: state.nextLid++, descricao: desc, valor, tipo: tipoSelecionado, usuario_id: uid, categoria_id: catid, data: new Date().toISOString() };
+    state.lancamentos.push(l);
+    document.getElementById('l-desc').value = '';
+    document.getElementById('l-valor').value = '';
+    renderLancamentos(); atualizarDashboard();
+    showToast('Lançamento criado — ID: ' + l.id);
+  }
+
+  function deletarLancamento(id) {
+    state.lancamentos = state.lancamentos.filter(l => l.id !== id);
+    renderLancamentos(); atualizarDashboard();
+    showToast('Lançamento removido');
+  }
+
+  function testarErroValor() {
+    const res = { erro: "O valor do lançamento deve ser positivo" };
+    document.getElementById('erro-result').innerHTML = `
+      <div class="resumo-block">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--danger)">422 Unprocessable Entity</div>
+        <pre style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px">${JSON.stringify(res, null, 2)}</pre>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">→ Enviado: valor = -50</div>
+      </div>`;
+    showToast('422: valor negativo bloqueado pelo sistema', 'error');
+  }
+
+  function testarErroTipo() {
+    const res = { erro: "O tipo deve ser 'entrada' ou 'saida'" };
+    document.getElementById('erro-result').innerHTML = `
+      <div class="resumo-block">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--danger)">422 Unprocessable Entity</div>
+        <pre style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px">${JSON.stringify(res, null, 2)}</pre>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">→ Enviado: tipo = "credito"</div>
+      </div>`;
+    showToast('422: tipo inválido rejeitado', 'error');
+  }
+
+  function renderLancamentos() {
+    const tb = document.getElementById('lance-table');
+    if (!state.lancamentos.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">💸</div><p>Nenhum lançamento cadastrado.</p></div></td></tr>'; return; }
+    tb.innerHTML = state.lancamentos.map(l => `
+      <tr>
+        <td>${l.id}</td>
+        <td>${l.descricao}</td>
+        <td><span class="badge badge-${l.tipo}">${l.tipo}</span></td>
+        <td class="valor-${l.tipo}">${l.tipo==='entrada'?'+':'−'}${fmt(l.valor)}</td>
+        <td>#${l.usuario_id}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deletarLancamento(${l.id})">Remover</button></td>
+      </tr>`).join('');
+  }
+
+  function filtrarLancamentos() {
+    const tipo = document.getElementById('filtro-tipo').value;
+    const uid = parseInt(document.getElementById('filtro-uid').value) || null;
+    let filtered = state.lancamentos;
+    if (tipo) filtered = filtered.filter(l => l.tipo === tipo);
+    if (uid) filtered = filtered.filter(l => l.usuario_id === uid);
+    const tb = document.getElementById('dash-table');
+    if (!filtered.length) { tb.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">🔍</div><p>Nenhum resultado para os filtros.</p></div></td></tr>'; return; }
+    tb.innerHTML = filtered.slice(-8).reverse().map(l => `
+      <tr>
+        <td>${l.id}</td>
+        <td>${l.descricao}</td>
+        <td><span class="badge badge-${l.tipo}">${l.tipo}</span></td>
+        <td class="valor-${l.tipo}">${l.tipo==='entrada'?'+':'−'}${fmt(l.valor)}</td>
+        <td>${fmtDate(l.data)}</td>
+      </tr>`).join('');
+  }
+
+  // ── DASHBOARD ──
+  function atualizarDashboard() {
+    const entradas = state.lancamentos.filter(l=>l.tipo==='entrada').reduce((s,l)=>s+l.valor,0);
+    const saidas = state.lancamentos.filter(l=>l.tipo==='saida').reduce((s,l)=>s+l.valor,0);
+    const saldo = entradas - saidas;
+    document.getElementById('dash-entradas').textContent = fmt(entradas);
+    document.getElementById('dash-saidas').textContent = fmt(saidas);
+    const saldoEl = document.getElementById('dash-saldo');
+    saldoEl.textContent = fmt(saldo);
+    saldoEl.style.color = saldo >= 0 ? 'var(--accent3)' : 'var(--danger)';
+    document.getElementById('dash-count').textContent = state.lancamentos.length;
+    filtrarLancamentos();
+  }
+
+  function carregarResumo() {
+    const uid = parseInt(document.getElementById('resumo-uid').value);
+    const u = state.usuarios.find(x => x.id === uid);
+    if (!u) { document.getElementById('resumo-result').innerHTML = `<div class="resumo-block"><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--danger)">404 — Usuário não encontrado</div></div>`; return; }
+    const entradas = state.lancamentos.filter(l=>l.usuario_id===uid&&l.tipo==='entrada').reduce((s,l)=>s+l.valor,0);
+    const saidas = state.lancamentos.filter(l=>l.usuario_id===uid&&l.tipo==='saida').reduce((s,l)=>s+l.valor,0);
+    const saldo = entradas - saidas;
+    const pct = entradas > 0 ? Math.min(100, (entradas/(entradas+saidas))*100) : 50;
+    document.getElementById('resumo-result').innerHTML = `
+      <div class="resumo-block">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);margin-bottom:8px">GET /lancamentos/resumo/${uid} → 200</div>
+        <div class="resumo-row"><span>usuario</span><span style="color:var(--text)">${u.nome}</span></div>
+        <div class="resumo-row"><span>total_entradas</span><span class="valor-entrada">${fmt(entradas)}</span></div>
+        <div class="resumo-row"><span>total_saidas</span><span class="valor-saida">${fmt(saidas)}</span></div>
+        <div class="resumo-row"><span>saldo</span><span style="color:${saldo>=0?'var(--accent3)':'var(--danger)'};font-weight:700">${fmt(saldo)}</span></div>
+        <div class="saldo-bar"><div class="saldo-fill" style="width:${pct}%"></div></div>
+      </div>`;
+  }
+
+  // ── SEED DATA para demo ──
+  function seedDemo() {
+    state.usuarios = [
+      { id:1, nome:'Ana Costa', email:'ana@email.com', criado_em: new Date().toISOString() },
+      { id:2, nome:'Bruno Lima', email:'bruno@email.com', criado_em: new Date().toISOString() }
+    ];
+    state.nextUid = 3;
+    state.categorias = [
+      { id:1, nome:'Salário', descricao:'Receita mensal' },
+      { id:2, nome:'Alimentação', descricao:'Gastos com comida' },
+      { id:3, nome:'Transporte', descricao:'Uber, combustível' }
+    ];
+    state.nextCid = 4;
+    state.lancamentos = [
+      { id:1, descricao:'Salário março', valor:4500, tipo:'entrada', usuario_id:1, categoria_id:1, data: new Date().toISOString() },
+      { id:2, descricao:'Aluguel', valor:1200, tipo:'saida', usuario_id:1, categoria_id:2, data: new Date().toISOString() },
+      { id:3, descricao:'Freelance design', valor:800, tipo:'entrada', usuario_id:2, categoria_id:1, data: new Date().toISOString() },
+      { id:4, descricao:'Supermercado', valor:350, tipo:'saida', usuario_id:1, categoria_id:2, data: new Date().toISOString() },
+    ];
+    state.nextLid = 5;
+    renderUsuarios(); renderCategorias(); renderLancamentos(); atualizarDashboard();
+  }
+
+  seedDemo();
+</script>
+</body>
+</html>
